@@ -22,10 +22,16 @@ while True :
     (spots[int(play)] not in ["O","X"]):
         play = int(play)
     else :
-        print("Please insert a valid digit")
+        os.system('cls' if os.name == 'nt' else 'clear')
+        draw_board(spots)
         continue
     spots[play]=check_turn(turn)[1]
     os.system('cls' if os.name == 'nt' else 'clear')
     draw_board(spots)
-    evaluate(spots) 
+    if evaluate(spots) == True :
+        print (f"Player {check_turn(turn)[0]} wins !")
+        break
+    elif evaluate(spots) == False :
+        print("It's a tie !")
+        break
     turn+=1
