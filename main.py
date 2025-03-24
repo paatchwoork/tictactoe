@@ -6,11 +6,13 @@ import os
 
 import pygame as pg
 
-
 # Initialize the graphics
 pg.init()
 
-screen = pg.display.set_mode((600,600))
+screen = pg.display.set_mode((600,800))
+
+# Name of window
+pg.display.set_caption('Tic Tac Toe')
 
 # White background
 background_color = (255,255,255)
@@ -22,21 +24,19 @@ lines_color = (0,0,0)
 pg.draw.line(screen, lines_color,(200,0),(200,600),3)
 pg.draw.line(screen, lines_color,(400,0),(400,600),3)
 
-#Horizontal lines
+# Horizontal lines
 pg.draw.line(screen, lines_color,(0,200),(600,200),3)
 pg.draw.line(screen, lines_color,(0,400),(600,400),3)
 
+# Set the font
+font = pg.font.SysFont('Arial', 40)
 
-# The board
+# The board in memory
 spots={
     1:"1", 2:"2", 3:"3",
     4:"4", 5:"5", 6:"6",
     7:"7", 8:"8", 9:"9"
     }
-
-# Clear the screen and draw the board
-os.system('cls' if os.name == 'nt' else 'clear')
-draw_board(spots)
 
 turn = 1
 
@@ -44,18 +44,29 @@ running = True
 
 clock = pg.Clock()
 
+# Show the screen
+pg.display.flip()
+
 # Run the game
 while running :
 
+    # If the payer wants to exit the game
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
 
-    clock.tick(30)
     pg.display.flip()
 
-    # Ask the user to play
-    # play = input(f"Player {check_turn(turn)[0]}, your move: ")
+    # Set the FPS to 30
+    clock.tick(30)
+
+    # Player X, your turn
+    text = font.render(f'Player {check_turn(turn)[0]}, your turn', True, lines_color, background_color)
+    textRect = text.get_rect()
+    textRect.center = (300,700)
+    screen.blit(text, textRect)
+    
+    # Check where the mouse is
     check_pos = [0,0]
     if pg.mouse.get_just_pressed()[0]:
 
@@ -63,6 +74,7 @@ while running :
 
         play = 1
 
+        # Adjust the position of the mouse to the center of the square 
         if mouse_pos[0] > 0 and mouse_pos[0] < 200 :
             check_pos[0] = 100
             play += 0
@@ -84,52 +96,68 @@ while running :
             check_pos[1] = 500
             play+=6
 
-        spots[play]=check_turn(turn)[1]
-        print(check_turn(turn)[0])
-        print(check_turn(turn)[1])
+        # Can't check outside of the board
+        if mouse_pos[1] > 600 :
+            continue
+
+        # Is the position already checked ?
+        if (spots[play] not in ["O","X"]):
+            spots[play]=check_turn(turn)[1]
+        else :
+            continue
+
+        # If all good draw a circle or a cross depending on the player turn
         if spots[play] == "O" :
             # Draw a circle
             pg.draw.circle(screen, lines_color,tuple(check_pos),90,3)
         elif spots[play] == "X" :
             # Draw a cross
             for arm in [(90,90),(-90,-90),(90,-90),(-90,+90)]:
-                print(arm)
                 end = tuple(map(lambda i, j: i + j,check_pos,arm))
                 pg.draw.line(screen, lines_color,check_pos,end,3)
 
-        # os.system('cls' if os.name == 'nt' else 'clear')
-        draw_board(spots)
-
-        # Evaluate if ther is a win or a draw
+        # Evaluate if there is a win or a draw
         if evaluate(spots) == True :
-            print (f"Player {check_turn(turn)[0]} wins !")
-            # break
+            bigRect = pg.Rect((0,600),(600,200))
+            bigRectSurf = pg.Surface((bigRect.w,bigRect.h)) 
+            bigRectSurf.fill(background_color)
+            screen.blit(bigRectSurf,bigRect)
+
+            text = font.render(f"Player {check_turn(turn)[0]} wins !", True, lines_color, background_color)
+            textRect = text.get_rect()
+            textRect.center = (300,700)
+            screen.blit(text, textRect)
+            
+            pg.display.flip()
+
+            # Loop until we exit the game
+            game_end = True
+            while game_end :
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        game_end = False
+                        running = False
+
         elif evaluate(spots) == False :
-            print("It's a tie !")
-            # break
+            
+            bigRect = pg.Rect((0,600),(600,200))
+            bigRectSurf = pg.Surface((bigRect.w,bigRect.h)) 
+            bigRectSurf.fill(background_color)
+            screen.blit(bigRectSurf,bigRect)
+
+            text = font.render(f"It's a tie !", True, lines_color, background_color)
+            textRect = text.get_rect()
+            textRect.center = (300,700)
+            screen.blit(text, textRect)
+            
+            pg.display.flip()
+
+            # Loop until we exit the game
+            game_end = True
+            while game_end :
+                for event in pg.event.get():
+                    if event.type == pg.QUIT:
+                        game_end = False
+                        running = False
 
         turn+=1
-
-    # # Checks if the input is right
-    # if (str.isdigit(play)) and \
-    # (int(play) in spots.keys()) and \
-    # (spots[int(play)] not in ["O","X"]):
-    #     play = int(play)
-    # else :
-    #     # os.system('cls' if os.name == 'nt' else 'clear')
-    #     # draw_board(spots)
-    #     continue
-    
-    # If it is, put a check at the corresponding location
-    # spots[play]=check_turn(turn)[1]
-    # os.system('cls' if os.name == 'nt' else 'clear')
-    # draw_board(spots)
-
-    # Evaluate if ther is a win or a draw
-    # if evaluate(spots) == True :
-    #     print (f"Player {check_turn(turn)[0]} wins !")
-    #     break
-    # elif evaluate(spots) == False :
-    #     print("It's a tie !")
-    #     break
-    # turn+=1
